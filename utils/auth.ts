@@ -17,9 +17,15 @@ function getAllowListForRequest(context) {
   const headers = new Headers(context.request.headers);
   const authorization = headers.get("Authorization");
   if (authorization && authorization.startsWith("Basic ")) {
-    const account = atob(authorization.split("Basic ")[1]);
-    if (account && context.env[account]) {
-      return parseAllowList(context.env[account]);
+    const base64 = authorization.split(" ")[1];
+    const decoded = atob(base64);
+    const colonIndex = decoded.indexOf(":");
+    if (colonIndex !== -1) {
+      const username = decoded.substring(0, colonIndex);
+      // 假设环境变量中存储的是对应用户的权限列表，如 context.env[username] = "*,/private"
+      if (username && context.env[username]) {
+        return parseAllowList(context.env[username]);
+      }
     }
   }
   if (context.env["GUEST"]) {
