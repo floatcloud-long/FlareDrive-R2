@@ -8,11 +8,11 @@ export async function onRequestGet(context) {
     if (!bucket || (prefix && prefix.startsWith("_$flaredrive$/"))) return notFound();
 
     // 1. 权限检查（路径级别）
-    if (!can_access_path(context, prefix)) {
-      const headers = new Headers();
-      headers.set("WWW-Authenticate", 'Basic realm="需要登录"');
-      return new Response("没有读取权限", { status: 401, headers });
-    }
+    if (prefix && !can_access_path(context, prefix)) {
+    const headers = new Headers();
+    headers.set("WWW-Authenticate", 'Basic realm="需要登录"');
+    return new Response("没有读取权限", { status: 401, headers });
+}
 
     // 2. 列出对象和文件夹
     const objList = await bucket.list({
