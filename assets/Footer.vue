@@ -40,10 +40,10 @@ export default {
   name: "Footer",
   data() {
     return {
-      homeUrl: "https://553346.xyz/",
-      blogUrl: "https://fyl.xx.kg/",
-      githubUrl: "https://github.com/floatcloud2020",
-      emailUrl: "mailto:admin@fyl.xx.kg"
+      homeUrl: "https://fyl.xx.kg/",
+      blogUrl: "https://553346.xyz/",
+      githubUrl: "https://github.com/floatcloud-long",
+      emailUrl: "mailto:i@fyl.xx.kg"
     };
   }
 };
