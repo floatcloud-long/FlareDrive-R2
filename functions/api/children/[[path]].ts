@@ -4,21 +4,19 @@ import { can_access_path, get_allow_list } from "@/utils/auth";
 export async function onRequestGet(context) {
   try {
     const [bucket, path] = parseBucketPath(context);
-    const prefix = path ? `${path}/` : "";
+    const prefix = path && `${path}/`;
     if (!bucket || (prefix && prefix.startsWith("_$flaredrive$/"))) return notFound();
 
-    // 调试日志
-    console.log("Children request path:", path, "prefix:", prefix);
-
-    // 权限检查
-    if (!can_access_path(context, prefix)) {
+    // 1. 权限检查（路径级别）
+    if (prefix && !can_access_path(context, prefix)) {
       const headers = new Headers();
       headers.set("WWW-Authenticate", 'Basic realm="需要登录"');
       return new Response("没有读取权限", { status: 401, headers });
     }
 
+    // 2. 列出对象和文件夹
     const objList = await bucket.list({
-      prefix: prefix,
+      prefix: prefix || "",
       delimiter: "/",
       include: ["httpMetadata", "customMetadata"],
     });
@@ -34,9 +32,10 @@ export async function onRequestGet(context) {
       folders = folders.filter((folder) => folder !== "_$flaredrive$/");
     }
 
+    // 3. 获取用户的权限列表
     const allowList = get_allow_list(context) || [];
-    console.log("allowList:", allowList);
 
+    // 4. 如果 allowList 不是 "*"，则进行过滤（包括空数组情况）
     if (!allowList.includes("*")) {
       if (!path) {
         objKeys = objKeys.filter((obj) =>
