@@ -29,28 +29,23 @@ export async function onRequestGet(context) {
 
     let folders = objList.delimitedPrefixes;
     if (!path) {
-      // 根目录下隐藏系统文件夹
       folders = folders.filter((folder) => folder !== "_$flaredrive$/");
     }
 
-    // 3. 获取用户的权限列表（用于细粒度过滤）
+    // 3. 获取用户的权限列表
     const allowList = get_allow_list(context) || [];
 
-    // 4. 如果 allowList 不是 "*"，则进行过滤（只显示允许的前缀）
-    if (!allowList.includes("*") && allowList.length > 0) {
+    // 4. 如果 allowList 不是 "*"，则进行过滤（包括空数组情况）
+    if (!allowList.includes("*")) {
       if (!path) {
-        // 根目录：过滤文件和文件夹
         objKeys = objKeys.filter((obj) =>
           allowList.some((allow) => obj.key.startsWith(allow))
         );
         folders = folders.filter((folder) =>
           allowList.some((allow) => folder.startsWith(allow))
         );
-        // 确保 allowList 中声明的路径在 folders 中存在（即使 R2 中没有物理文件夹）
         for (const allow of allowList) {
-          // 只添加非根路径且不以系统前缀开头的
           if (allow && allow !== "/" && !allow.startsWith("_$flaredrive$/")) {
-            // 确保路径以 / 结尾，与 folders 格式一致
             const folderEntry = allow.endsWith("/") ? allow : allow + "/";
             if (!folders.includes(folderEntry)) {
               folders.push(folderEntry);
@@ -58,7 +53,6 @@ export async function onRequestGet(context) {
           }
         }
       } else {
-        // 子目录：只过滤文件（文件夹由前缀自然限制）
         objKeys = objKeys.filter((obj) =>
           allowList.some((allow) => obj.key.startsWith(allow))
         );
