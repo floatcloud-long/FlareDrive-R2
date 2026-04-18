@@ -60,6 +60,14 @@ export function can_access_path(context: any, targetPath: string): boolean {
   if (targetPath === "") return true;
   return matchesAllowList(targetPath, allowlist);
 }
+export function can_access_path(context: any, targetPath: string): boolean {
+  if (targetPath.startsWith(THUMBNAIL_PREFIX)) return true;
+  // 根目录始终放行，具体权限由后续过滤逻辑控制
+  if (targetPath === "") return true;
+  const allowlist = getAllowListForRequest(context);
+  if (allowlist === null) return false;
+  return matchesAllowList(targetPath, allowlist);
+}
 
 export function get_allow_list(context: any): string[] | null {
   return getAllowListForRequest(context);
