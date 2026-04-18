@@ -13,24 +13,31 @@ function matchesAllowList(targetPath, allowList) {
   return allowList.some((allow) => targetPath.startsWith(allow));
 }
 
-function getAllowListForRequest(context) {
+function getAllowListForRequest(context: any): string[] | null {
   const headers = new Headers(context.request.headers);
   const authorization = headers.get("Authorization");
+
+  // 1. 尝试 Basic Auth
   if (authorization && authorization.startsWith("Basic ")) {
     const base64 = authorization.split(" ")[1];
-    const decoded = atob(base64);
-    const colonIndex = decoded.indexOf(":");
-    if (colonIndex !== -1) {
-      const username = decoded.substring(0, colonIndex);
-      // 假设环境变量中存储的是对应用户的权限列表，如 context.env[username] = "*,/private"
-      if (username && context.env[username]) {
-        return parseAllowList(context.env[username]);
+    try {
+      const credentials = atob(base64); // 格式 "username:password"
+      // 直接用完整的 "username:password" 作为键名去环境变量中查找
+      const allowListValue = context.env[credentials];
+      if (allowListValue !== undefined) {
+        return parseAllowList(allowListValue);
       }
+    } catch (e) {
+      console.error("Basic Auth decode error", e);
     }
   }
+
+  // 2. 游客模式（未提供 Authorization 或认证失败）
   if (context.env["GUEST"]) {
     return parseAllowList(context.env["GUEST"]);
   }
+
+  // 3. 没有任何权限配置
   return null;
 }
 
