@@ -56,6 +56,8 @@ export function can_access_path(context: any, targetPath: string): boolean {
   if (targetPath.startsWith(THUMBNAIL_PREFIX)) return true;
   const allowlist = getAllowListForRequest(context);
   if (allowlist === null) return false;
+  // 根目录（空字符串）始终允许访问，权限由后续过滤逻辑控制
+  if (targetPath === "") return true;
   return matchesAllowList(targetPath, allowlist);
 }
 
