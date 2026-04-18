@@ -4,7 +4,7 @@ import { can_access_path, get_allow_list } from "@/utils/auth";
 export async function onRequestGet(context) {
   try {
     const [bucket, path] = parseBucketPath(context);
-    const prefix = path && `${path}/`;
+    const prefix = path ? `${path}/` : "";
     if (!bucket || (prefix && prefix.startsWith("_$flaredrive$/"))) return notFound();
 
     // 1. 权限检查（路径级别）
